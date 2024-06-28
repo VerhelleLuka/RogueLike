@@ -1,6 +1,7 @@
 using DG.Tweening;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class Weapon : MonoBehaviour
@@ -27,12 +28,15 @@ public class Weapon : MonoBehaviour
     public GameObject projectilePrefab;
 
     public string weaponName = "weapon";
+    public string weaponDescription = "description";
 
     private bool m_Looking = false;
 
     private PlayerStats m_PlayerStats;
 
     private float cooldownTimer = 10f;
+
+    private Vector3 m_ClosestEnemyPos = Vector3.zero;
 
     private void Awake()
     {
@@ -45,11 +49,14 @@ public class Weapon : MonoBehaviour
     {
         SetAmmo();
         coolDown = coolDown / (coolDown + m_PlayerStats.attackSpeed * 0.01f);
+
+
+
     }
 
     private void LateUpdate()
     {
-        transform.position =new Vector3(transform.position.x, transform.position.y, -1f);
+        transform.position = new Vector3(transform.position.x, transform.position.y, -1f);
     }
     public void SetAmmo()
     {
@@ -63,18 +70,18 @@ public class Weapon : MonoBehaviour
         if (EnemySpawner.instance)
             childrenCount = EnemySpawner.instance.transform.childCount;
         float distance = 1000;
-        Vector3 closestEnemyPos = new Vector3();
+        m_ClosestEnemyPos = new Vector3();
         for (int i = 0; i < childrenCount; ++i)
         {
             if (Vector2.Distance(EnemySpawner.instance.transform.GetChild(i).transform.position, transform.position) < distance)
             {
                 distance = Vector2.Distance(EnemySpawner.instance.transform.GetChild(i).transform.position, transform.position);
-                closestEnemyPos = EnemySpawner.instance.transform.GetChild(i).transform.position;
+                m_ClosestEnemyPos = EnemySpawner.instance.transform.GetChild(i).transform.position;
             }
         }
         if (distance <= ammo.range)
         {
-            Vector2 direction = (closestEnemyPos - transform.position).normalized;
+            Vector2 direction = (m_ClosestEnemyPos - transform.position).normalized;
             var angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg;
 
             transform.rotation = Quaternion.Euler(Vector3.forward * angle);
@@ -106,28 +113,37 @@ public class Weapon : MonoBehaviour
             {
 
                 m_Attacking = true;
-                sequence = DOTween.Sequence();
-                sequence.Join(transform.DOLocalMove((Vector2)((closestEnemyPos - transform.position).normalized * (ammo.range + m_PlayerStats.range * 0.01f)), 0.2f * ammo.speed))
-                    .OnStepComplete(() => GetComponent<BoxCollider2D>().isTrigger = true);
-                sequence.OnStart(() =>  GetComponent<BoxCollider2D>().isTrigger = true);
-                    
-                sequence.Append(transform.DOLocalMove(new Vector3(0, 0, -1), 0.5f * ammo.speed)).OnStart(() => GetComponent<BoxCollider2D>().isTrigger = false);
-                sequence.OnComplete(() => m_Attacking = false);
-                sequence.Play();
-               
+                    SetSequence();
+                    attackSequence.Play();
+
                 cooldownTimer = 0;
 
             }
-            else if(!m_Attacking)
+            else if (!m_Attacking)
             {
                 cooldownTimer += Time.deltaTime;
-                
+
             }
         }
     }
-    Sequence sequence;
+    DG.Tweening.Sequence attackSequence;
+    DG.Tweening.Sequence retreatSequence;
     private bool m_Attacking = false;
 
+    private void SetSequence()
+    {
+        retreatSequence = DOTween.Sequence();
+        attackSequence = DOTween.Sequence();
+        attackSequence.OnPlay(() => GetComponent<BoxCollider2D>().isTrigger = true);
+        attackSequence.Append(transform.DOLocalMove((Vector2)((m_ClosestEnemyPos - transform.position).normalized * (ammo.range + m_PlayerStats.range * 0.01f)), 0.2f * ammo.speed))
+            .OnComplete(() =>
+            {
+                m_Attacking = false;
+                GetComponent<BoxCollider2D>().isTrigger = false;
+            });
+        retreatSequence.Append(transform.DOLocalMove(new Vector3(0, 0, -1), 0.5f /** ammo.speed*/))
+    .OnStepComplete(() => m_Attacking = false);
+    }
 
     private void OnEnable()
     {

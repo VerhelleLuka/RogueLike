@@ -14,7 +14,7 @@ public class WeaponsManager : MonoBehaviour
         instance = this;
     }
 
-    public void AddWeapon(string weaponName)
+    public bool AddWeapon(string weaponName)
     {
         for(int i = 0; i < weaponSockets.Length; i++)
         {
@@ -25,14 +25,14 @@ public class WeaponsManager : MonoBehaviour
                     if(weaponName == weaponPrefabs[j].GetComponent<Weapon>().weaponName)
                     {
                         GameObject weapon = Instantiate(weaponPrefabs[j], weaponSockets[i].transform);
-                        //weapon.transform.position = new Vector3(0, 0, -1);
-                        break;
+                        return true ;
                     }
 
                 }
                 break;
             }
         }
+        return false;
     }
 
     public void RemoveWeapon(int socket)
@@ -40,9 +40,5 @@ public class WeaponsManager : MonoBehaviour
         GameObject.Destroy(weaponSockets[socket].transform.GetChild(0));
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+
 }

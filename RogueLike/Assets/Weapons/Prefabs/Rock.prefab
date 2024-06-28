@@ -217,6 +217,7 @@ MonoBehaviour:
   ammo: {fileID: 11400000, guid: 9e8f0034618cb214aa3e1160bd523f9e, type: 2}
   projectilePrefab: {fileID: 0}
   weaponName: Rock
+  weaponDescription: Some rock hard rock on rock action ;))
 --- !u!61 &2166475926549190001
 BoxCollider2D:
   m_ObjectHideFlags: 0
