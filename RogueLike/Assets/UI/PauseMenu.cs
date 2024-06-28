@@ -13,22 +13,22 @@ public class PauseMenu : MonoBehaviour
     private GameObject m_ActiveMenu;
 
     private void Start()
-    {  
+    {
         pauseMenu.SetActive(false);
         optionsMenu.SetActive(false);
         mainMenuPopup.SetActive(false);
     }
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
-            if(m_ActiveMenu == pauseMenu)
+            if (m_ActiveMenu == pauseMenu)
             {
                 Time.timeScale = 1.0f;
                 m_ActiveMenu.SetActive(false);
                 m_ActiveMenu = null;
             }
-            else if(m_ActiveMenu != pauseMenu && m_ActiveMenu)
+            else if (m_ActiveMenu != pauseMenu && m_ActiveMenu)
             {
                 m_ActiveMenu.SetActive(false);
                 m_ActiveMenu = pauseMenu;
@@ -37,7 +37,7 @@ public class PauseMenu : MonoBehaviour
             else
             {
                 Time.timeScale = 0.0f;
-                m_ActiveMenu = pauseMenu; 
+                m_ActiveMenu = pauseMenu;
                 m_ActiveMenu.SetActive(true);
                 pauseMenu.transform.Find("Resume").GetComponent<Button>().Select();
 
@@ -57,17 +57,21 @@ public class PauseMenu : MonoBehaviour
         m_ActiveMenu.SetActive(false);
         m_ActiveMenu = optionsMenu;
         m_ActiveMenu.SetActive(true);
-       optionsMenu.GetComponentInChildren<Button>().Select();
+        optionsMenu.GetComponentInChildren<Button>().Select();
 
 
     }
     public void OnBack()
     {
+        if (m_ActiveMenu == mainMenuPopup)
+            pauseMenu.transform.Find("MainMenu").GetComponent<Button>().Select();
+        else
+            pauseMenu.transform.Find("Options").GetComponent<Button>().Select();
         m_ActiveMenu.SetActive(false);
         m_ActiveMenu = pauseMenu;
         m_ActiveMenu.SetActive(true);
 
-        pauseMenu.transform.Find("Options").GetComponent<Button>().Select();
+
     }
 
     public void OnMainMenu()
